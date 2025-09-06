@@ -2,13 +2,10 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
-# -------------------------
+
 # Load image (BGR→Gray)
-# -------------------------
-IMG_PATH = 'images/einstein.png'  # change if needed
+IMG_PATH = 'images/einstein.png'
 im_bgr = cv.imread(IMG_PATH)
-if im_bgr is None:  # fallback to the file you shared
-    im_bgr = cv.imread('/mnt/data/cf0e018c-cc10-47aa-8693-e5b0b930a0f3.png')
 gray = cv.cvtColor(im_bgr, cv.COLOR_BGR2GRAY)
 
 # Sobel 3x3 kernels
@@ -22,16 +19,12 @@ def to_u8(a):
     a = cv.normalize(a, None, 0, 255, cv.NORM_MINMAX)
     return a.astype(np.uint8)
 
-# -------------------------
 # 6(a) Use existing filter2D
-# -------------------------
 gx_a = cv.filter2D(gray, cv.CV_32F, KX)
 gy_a = cv.filter2D(gray, cv.CV_32F, KY)
 mag_a = cv.magnitude(gx_a, gy_a)
 
-# -------------------------
 # 6(b) Write your own Sobel (manual correlation)
-# -------------------------
 def correlate2d(img, k):
     kh, kw = k.shape
     ph, pw = kh // 2, kw // 2
@@ -46,12 +39,7 @@ gx_b = correlate2d(gray, KX)
 gy_b = correlate2d(gray, KY)
 mag_b = cv.magnitude(gx_b, gy_b)
 
-# -------------------------
 # 6(c) Use separability:
-#     [ [1,0,-1],[2,0,-2],[1,0,-1] ] = [1,2,1]^T * [1,0,-1]
-#     So Gx: kx = [1,0,-1], ky = [1,2,1]
-#     Gy: transpose (kx=[1,2,1], ky=[1,0,-1])
-# -------------------------
 s = np.array([1, 2, 1], dtype=np.float32)   # smoothing
 d = np.array([1, 0, -1], dtype=np.float32)  # derivative
 
@@ -59,28 +47,45 @@ gx_c = cv.sepFilter2D(gray, cv.CV_32F, d, s)  # horiz deriv, vert smooth
 gy_c = cv.sepFilter2D(gray, cv.CV_32F, s, d)  # vert deriv, horiz smooth
 mag_c = cv.magnitude(gx_c, gy_c)
 
-# -------------------------
-# Display (no axis values)
-# -------------------------
-plt.figure(figsize=(12, 10))
 
-# Row A: filter2D
-plt.subplot(3,4,1);  plt.imshow(gray, cmap='gray');   plt.title("Original");             plt.xticks([]); plt.yticks([])
-plt.subplot(3,4,2);  plt.imshow(to_u8(gx_a), cmap='gray'); plt.title("A: Gx (filter2D)");  plt.xticks([]); plt.yticks([])
-plt.subplot(3,4,3);  plt.imshow(to_u8(gy_a), cmap='gray'); plt.title("A: Gy (filter2D)");  plt.xticks([]); plt.yticks([])
-plt.subplot(3,4,4);  plt.imshow(to_u8(mag_a), cmap='gray');plt.title("A: |G|");           plt.xticks([]); plt.yticks([])
+# Display with visible headers (no axis values)
 
-# Row B: manual
-plt.subplot(3,4,5);  plt.imshow(gray, cmap='gray');   plt.title("Original");             plt.xticks([]); plt.yticks([])
-plt.subplot(3,4,6);  plt.imshow(to_u8(gx_b), cmap='gray'); plt.title("B: Gx (manual)");    plt.xticks([]); plt.yticks([])
-plt.subplot(3,4,7);  plt.imshow(to_u8(gy_b), cmap='gray'); plt.title("B: Gy (manual)");    plt.xticks([]); plt.yticks([])
-plt.subplot(3,4,8);  plt.imshow(to_u8(mag_b), cmap='gray');plt.title("B: |G|");           plt.xticks([]); plt.yticks([])
+fig, axs = plt.subplots(3, 4, figsize=(14, 9), constrained_layout=True)
 
-# Row C: separable
-plt.subplot(3,4,9);  plt.imshow(gray, cmap='gray');   plt.title("Original");             plt.xticks([]); plt.yticks([])
-plt.subplot(3,4,10); plt.imshow(to_u8(gx_c), cmap='gray'); plt.title("C: Gx (separable)"); plt.xticks([]); plt.yticks([])
-plt.subplot(3,4,11); plt.imshow(to_u8(gy_c), cmap='gray'); plt.title("C: Gy (separable)"); plt.xticks([]); plt.yticks([])
-plt.subplot(3,4,12); plt.imshow(to_u8(mag_c), cmap='gray');plt.title("C: |G|");           plt.xticks([]); plt.yticks([])
+# Column headers
+col_titles = ["Original", "Gx", "Gy", "|G|"]
+for j, t in enumerate(col_titles):
+    axs[0, j].set_title(t, pad=6)
 
-plt.tight_layout()
+# Row headers (labels at left of each row)
+row_titles = ["A: filter2D", "B: manual", "C: separable"]
+for i, t in enumerate(row_titles):
+    axs[i, 0].set_ylabel(t, rotation=0, labelpad=35, va='center', ha='right', fontsize=11)
+
+# Row A
+axs[0,0].imshow(gray, cmap='gray')
+axs[0,1].imshow(to_u8(gx_a), cmap='gray')
+axs[0,2].imshow(to_u8(gy_a), cmap='gray')
+axs[0,3].imshow(to_u8(mag_a), cmap='gray')
+
+# Row B
+axs[1,0].imshow(gray, cmap='gray')
+axs[1,1].imshow(to_u8(gx_b), cmap='gray')
+axs[1,2].imshow(to_u8(gy_b), cmap='gray')
+axs[1,3].imshow(to_u8(mag_b), cmap='gray')
+
+# Row C
+axs[2,0].imshow(gray, cmap='gray')
+axs[2,1].imshow(to_u8(gx_c), cmap='gray')
+axs[2,2].imshow(to_u8(gy_c), cmap='gray')
+axs[2,3].imshow(to_u8(mag_c), cmap='gray')
+
+# Hide ticks/axis values
+for ax in axs.ravel():
+    ax.set_xticks([]); ax.set_yticks([])
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
 plt.show()
+
+

@@ -2,9 +2,8 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ---------------------------
+
 # Core: image zoom (manual)
-# ---------------------------
 def zoom(img, s: float, method: str = "nearest"):
     """
     Zoom by factor s (0 < s <= 10). Supports 'nearest' and 'bilinear'.
@@ -53,9 +52,8 @@ def zoom(img, s: float, method: str = "nearest"):
 
     return out[..., 0].astype(np.uint8) if C == 1 else out.astype(np.uint8)
 
-# ---------------------------------
+
 # Metric: normalized SSD in [0, 1]
-# ---------------------------------
 def normalized_ssd(a, b):
     a = a.astype(np.float32); b = b.astype(np.float32)
     return float(np.sum((a - b) ** 2) / (a.size * (255.0 ** 2)))
@@ -73,11 +71,6 @@ fig, axes = plt.subplots(len(paths), 4, figsize=(14, 7), squeeze=False)
 for r, (orig_p, small_p) in enumerate(paths):
     # read original as grayscale
     orig = cv.imread(orig_p, cv.IMREAD_GRAYSCALE)
-    if orig is None:
-        # fallbacks to files you shared in this thread
-        fallback = ["/mnt/data/cf0e018c-cc10-47aa-8693-e5b0b930a0f3.png",
-                    "/mnt/data/effbc0d2-cdfe-4fa5-96be-29fae81fbcdd.png"]
-        orig = cv.imread(fallback[r % len(fallback)], cv.IMREAD_GRAYSCALE)
 
     # read provided small image, else synthesize by 1/4 downscale (INTER_AREA is best for shrink)
     if small_p is not None:

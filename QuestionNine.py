@@ -2,15 +2,12 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ----------------------------
-# Paths (update to your images)
-# ----------------------------
+# Paths
 RICE_A = "images/rice_salt_pepper_noise.png"   # salt & pepper like
 RICE_B = "images/rice_gaussian_noise.png"   # Gaussian noise like
 
-# ----------------------------
+
 # Helpers
-# ----------------------------
 def denoise(img, variant="a"):
     """Denoise grayscale image depending on variant."""
     if variant.lower() == "a":
@@ -72,9 +69,8 @@ def process(path, variant):
     n, kept_mask, lab_vis = count_components(msk, min_area=min_area)
     return img, den, bw, kept_mask, lab_vis, n
 
-# ----------------------------
+
 # Run both (a) and (b)
-# ----------------------------
 imgA, denA, bwA, maskA, labA, nA = process(RICE_A, "a")
 imgB, denB, bwB, maskB, labB, nB = process(RICE_B, "b")
 

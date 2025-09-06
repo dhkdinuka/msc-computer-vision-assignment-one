@@ -2,20 +2,15 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ----------------------------
+
 # Load image (BGR) and prep RGB
-# ----------------------------
-IMG_PATH = "images/daisy.jpg"   # <- set your flower image path
+IMG_PATH = "images/daisy.jpg"
 img_bgr = cv.imread(IMG_PATH)
-if img_bgr is None:  # fallback to a file from this thread
-    img_bgr = cv.imread("/mnt/data/cf0e018c-cc10-47aa-8693-e5b0b930a0f3.png")
 img_rgb = cv.cvtColor(img_bgr, cv.COLOR_BGR2RGB)
 H, W = img_rgb.shape[:2]
 
-# ----------------------------
+
 # (a) GrabCut segmentation
-# ----------------------------
-# Initialize mask & rectangle (loose box around the subject)
 mask = np.zeros((H, W), np.uint8)
 rect = (W//10, H//10, W - 2*(W//10), H - 2*(H//10))  # x,y,w,h
 
@@ -34,17 +29,10 @@ fg_mask = cv.morphologyEx(fg_mask, cv.MORPH_CLOSE, kernel, iterations=2)
 # Derive foreground and background images
 fg_rgb = (img_rgb * fg_mask[..., None]).astype(np.uint8)
 bg_rgb = (img_rgb * (1 - fg_mask[..., None])).astype(np.uint8)
-
-# ----------------------------
 # (b) Enhanced image:
-#     blur background heavily
-#     (blur first, then composite to avoid halos)
-# ----------------------------
 blurred_rgb = cv.GaussianBlur(img_rgb, (31, 31), 0)
-
 # Hard matte
 enh_hard = (img_rgb * fg_mask[..., None] + blurred_rgb * (1 - fg_mask[..., None])).astype(np.uint8)
-
 # Soft matte (feathered mask) for smoother transition
 alpha = cv.GaussianBlur(fg_mask.astype(np.float32), (0, 0), 2.0)
 alpha = np.clip(alpha, 0.0, 1.0)[..., None]
