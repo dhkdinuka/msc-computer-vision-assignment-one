@@ -17,6 +17,16 @@ s_new = cv.LUT(s, vibrance_curve)
 hsv_new = cv.merge([h, s_new, v])
 img_out = cv.cvtColor(hsv_new, cv.COLOR_HSV2BGR)
 
-plt.subplot(121), plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB)), plt.title("Original")
-plt.subplot(122), plt.imshow(cv.cvtColor(img_out, cv.COLOR_BGR2RGB)), plt.title("Vibrance Enhanced")
+fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+
+ax[0].set_title('Original Image')
+ax[0].imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
+
+ax[1].set_title(f'Vibrance Enhanced (a={a})')
+ax[1].imshow(cv.cvtColor(img_out, cv.COLOR_BGR2RGB))
+
+for a_ax in ax:   # hide ticks & frame
+    a_ax.axis('off')
+
+plt.tight_layout()
 plt.show()
